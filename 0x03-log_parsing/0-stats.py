@@ -1,74 +1,51 @@
 #!/usr/bin/python3
 """
-Log stats module
+Task 0. Log parsing
+
+A script that reads stdin line by line and computes metrics.
 """
+
 import sys
-from operator import itemgetter
 
 
-def log_parser(log):
+def printStats(file_size, status):
+    """printStats
+
+    This function takes the total file size and the
+    statues that were called and prints them.
+
+    Arguments:
+        file_size (int): The total file size to be printed.
+        status (dict{int, int}): A dictionary of the statues that were called.
     """
-    Parses log into different fields
-    """
-    log_fields = log.split()
-    file_size = int(log_fields[-1])
-    status_code = log_fields[-2]
-    return status_code, file_size
+    print("File size: {}".format(file_size))
+    for key, value in sorted(status.items()):
+        if value != 0:
+            print("{}: {}".format(key, value))
 
 
-def validate_format(log):
-    """
-    Validates log format
-    """
-    return False if len(log.split()) < 7 else True
+total_file_size = 0
+count = 0
+possible_status = {200: 0, 301: 0, 400: 0, 401: 0,
+                   403: 0, 404: 0, 405: 0, 500: 0}
+try:
+    for line in sys.stdin:
+        args = line.split()
 
+        status_code = int(args[-2])
+        file_size = int(args[-1])
 
-def validate_status_code(status_code):
-    """
-    Check if status code entry is valid
-    """
-    valid_status_codes = ["200", "301", "400", "401",
-                          "403", "404", "405", "500"]
-    return True if status_code in valid_status_codes else False
+        if status_code in possible_status:
+            possible_status[status_code] += 1
 
+        total_file_size += file_size
+        count += 1
 
-def print_log(file_size, status_codes) -> None:
-    """
-    Prints out log files
-    """
-    sorted_status_codes = sorted(status_codes.items(), key=itemgetter(0))
-    print('File size: {}'.format(file_size))
-    for code_count in sorted_status_codes:
-        key = code_count[0]
-        value = code_count[1]
-        print("{}: {}".format(key, value))
-
-
-def main():
-    """
-    Reads logs from std in and prints out statistic
-    on status code and file size
-    """
-    status_codes_count = {}
-    total_size = 0
-    log_count = 0
-    try:
-        for log in sys.stdin:
-            log_count += 1
-            if not validate_format(log):
-                continue
-            status_code, file_size = log_parser(log)
-            total_size += file_size
-            if validate_status_code(status_code):
-                entry = {status_code:
-                         status_codes_count.get(status_code, 0) + 1}
-                status_codes_count.update(entry)
-            if not log_count % 10:
-                print_log(total_size, status_codes_count)
-    except KeyboardInterrupt:
-        print_log(total_size, status_codes_count)
-    print_log(total_size, status_codes_count)
-
-
-if __name__ == '__main__':
-    main()
+        if count == 10:
+            printStats(total_file_size, possible_status)
+            count = 0
+    printStats(total_file_size, possible_status)
+except KeyboardInterrupt:
+    raise
+finally:
+    printStats(total_file_size, possible_status)
