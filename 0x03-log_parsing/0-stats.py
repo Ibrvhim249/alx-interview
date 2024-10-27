@@ -1,51 +1,55 @@
 #!/usr/bin/python3
-"""
-Task 0. Log parsing
-
-A script that reads stdin line by line and computes metrics.
-"""
 
 import sys
 
 
-def printStats(file_size, status):
-    """printStats
-
-    This function takes the total file size and the
-    statues that were called and prints them.
-
-    Arguments:
-        file_size (int): The total file size to be printed.
-        status (dict{int, int}): A dictionary of the statues that were called.
+def print_msg(dict_sc, total_file_size):
     """
-    print("File size: {}".format(file_size))
-    for key, value in sorted(status.items()):
-        if value != 0:
-            print("{}: {}".format(key, value))
+    Method to print
+    Args:
+        dict_sc: dict of status codes
+        total_file_size: total of the file
+    Returns:
+        Nothing
+    """
+
+    print("File size: {}".format(total_file_size))
+    for key, val in sorted(dict_sc.items()):
+        if val != 0:
+            print("{}: {}".format(key, val))
 
 
 total_file_size = 0
-count = 0
-possible_status = {200: 0, 301: 0, 400: 0, 401: 0,
-                   403: 0, 404: 0, 405: 0, 500: 0}
+code = 0
+counter = 0
+dict_sc = {"200": 0,
+           "301": 0,
+           "400": 0,
+           "401": 0,
+           "403": 0,
+           "404": 0,
+           "405": 0,
+           "500": 0}
+
 try:
     for line in sys.stdin:
-        args = line.split()
+        parsed_line = line.split()  # ✄ trimming
+        parsed_line = parsed_line[::-1]  # inverting
 
-        status_code = int(args[-2])
-        file_size = int(args[-1])
+        if len(parsed_line) > 2:
+            counter += 1
 
-        if status_code in possible_status:
-            possible_status[status_code] += 1
+            if counter <= 10:
+                total_file_size += int(parsed_line[0])  # file size
+                code = parsed_line[1]  # status code
 
-        total_file_size += file_size
-        count += 1
+                if (code in dict_sc.keys()):
+                    dict_sc[code] += 1
 
-        if count == 10:
-            printStats(total_file_size, possible_status)
-            count = 0
-    printStats(total_file_size, possible_status)
-except KeyboardInterrupt:
-    raise
+            if (counter == 10):
+                print_msg(dict_sc, total_file_size)
+                counter = 0
+
 finally:
-    printStats(total_file_size, possible_status)
+    print_msg(dict_sc, total_file_size)
+
